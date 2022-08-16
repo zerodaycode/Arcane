@@ -1,0 +1,10 @@
+[package]
+name = "arcane"
+version = "0.1.0"
+edition = "2021"
+authors = ["Alex Vergara<pyzyryab@tutanota.com>"]
+
+[dependencies]
+syn = { version = "1.0.86", features = ["full"] }
+quote = "1.0.9"
+proc-macro2 = "1.0.27"
