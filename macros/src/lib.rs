@@ -6,9 +6,9 @@ use std::collections::HashMap;
 
 use proc_macro::TokenStream as CompilerTokenStream;
 use proc_macro2::Ident;
-use quote::quote;
+use quote::{quote, ToTokens};
 use syn::{
-    DeriveInput, Fields, Visibility
+    DeriveInput, Fields, Type, Visibility
 };
 
 
@@ -36,27 +36,19 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
 
     let fields_name_type = fields_name_type(ast_data);
 
-    // let field_idents = fields.iter()
-                //     .map( |(_vis, ident)|
-                //         {
-                //             let i = ident.to_string();
-                //             quote! {
-                //                 #i => Some(self.#ident.to_string())
-                //             }
-                //         }
-                // );
-    let f = fields.iter()
-        .map( |(_vis, ident)| 
+    let hm_f = fields.iter()
+        .map( |(_vis, ident, typ)| 
             {
                 let i = ident.to_string();
+                let t = get_field_type_as_string(typ);
                 quote! {
                     hm.push(#i, #i);
                 }
             }
     );
 
-    let field_idents = fields.iter()
-        .map( |(_vis, ident)|
+    let _field_idents = fields.iter()
+        .map( |(_vis, ident, _typ)|
             {
                 let i = ident.to_string();
                 quote! {
@@ -77,7 +69,7 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
             /// struct's fields and the type of every field.
             fn get_stuct_fields<'a>(&'a self) -> HashMap<String, String> {
                 let hm = HashMap::new();
-                #(#f),*;
+                #(#hm_f),*;
                 hm
             }
 
@@ -94,11 +86,15 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
 /// TODO Refactor them into a real helper struct
 /// 
 /// Helper for generate the fields data for the Custom Derives Macros
-fn filter_fields(fields: &Fields) -> Vec<(Visibility, Ident)> {
+fn filter_fields(fields: &Fields) -> Vec<(Visibility, Ident, Type)> {
     fields
         .iter()
-        .map(|field| 
-            (field.vis.clone(), field.ident.as_ref().unwrap().clone()) 
+        .map( |field| 
+            (
+                field.vis.clone(), 
+                field.ident.as_ref().unwrap().clone(),
+                field.ty.clone()
+            ) 
         )
         .collect::<Vec<_>>()
 }
@@ -112,4 +108,26 @@ fn fields_name_type(fields: &Fields) -> HashMap<String, String> {
                 "".to_string()
             )
         }).collect::<HashMap<String, String> >()
+}
+
+/// TODO Refactor to a utilery module
+fn get_field_type_as_string(typ: &Type) -> String {
+    match &*typ {
+        Type::Array(type_) => type_.to_token_stream().to_string(),
+        Type::BareFn(type_) => type_.to_token_stream().to_string(),
+        Type::Group(type_) => type_.to_token_stream().to_string(),
+        Type::ImplTrait(type_) => type_.to_token_stream().to_string(),
+        Type::Infer(type_) => type_.to_token_stream().to_string(),
+        Type::Macro(type_) => type_.to_token_stream().to_string(),
+        Type::Never(type_) => type_.to_token_stream().to_string(),
+        Type::Paren(type_) => type_.to_token_stream().to_string(),
+        Type::Path(type_) => type_.to_token_stream().to_string(),
+        Type::Ptr(type_) => type_.to_token_stream().to_string(),
+        Type::Reference(type_) => type_.to_token_stream().to_string(),
+        Type::Slice(type_) => type_.to_token_stream().to_string(),
+        Type::TraitObject(type_) => type_.to_token_stream().to_string(),
+        Type::Tuple(type_) => type_.to_token_stream().to_string(),
+        Type::Verbatim(type_) => type_.to_token_stream().to_string(),
+        _ => "".to_owned(),
+    }
 }
