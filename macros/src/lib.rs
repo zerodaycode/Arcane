@@ -18,7 +18,8 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
     let ty = ast.ident;
     let ty_str = ty.to_string();
 
-    // Recovers the identifiers of the struct's members
+    // Recovers the identifiers of the struct's members, and checks that the derive
+    // macro it's only applied to structs
     let fields = filter_fields(
         match ast.data {
             syn::Data::Struct(ref s) => &s.fields,
@@ -42,11 +43,13 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
     );
     
     let quote = quote! {
-        use arcane::reflexion::StructReflexion;
+        /// Returns the identifier of a struct as a string slice
         impl arcane::reflexion::StructReflexion for #ty {
             fn get_struct_name<'a>(&'a self) -> &'a str {
                 #ty_str
             }
+
+            
         }
     };
 

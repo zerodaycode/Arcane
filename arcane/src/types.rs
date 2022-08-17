@@ -9,5 +9,6 @@ pub trait Reflexion {}
 /// Gives a user defined type the ability of introspect itself
 /// and provide the caller info about the type at runtime.
 pub trait StructReflexion {
+    /// Returns the identifier of a struct as a string slice
     fn get_struct_name<'a>(&'a self) -> &'a str;
 }
