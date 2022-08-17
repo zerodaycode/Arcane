@@ -1,13 +1,4 @@
-//! The 'Arcane' project
-//! 
-//! Arcane project was born to provide the developer some facilities
-//! about obtain runtime info on certain pices of code, known in other languages
-//! as the `reflexion` concept, which is the ability of the code to introspect
-//! itself to get details about itself, and/or generate bits of code that 
-//! most of the time are boilerplate code, related with that info, like for example,
-//! generate getters and setters when you don't want to publicly expose the
-//! internal details about a type. 
-//! 
+//! Library for the implementation of the macro-driven `Arcane` features
 
 extern crate proc_macro;
 
@@ -18,16 +9,14 @@ use syn::{
     DeriveInput, Fields, Visibility
 };
 
-/// Contains macros that provides runtime info about different
-/// Rust pieces of code.
 
-// mod reflexion {  // reexport macros in another crate
 
-#[proc_macro_attribute]
-pub fn reflexion_details(_meta: CompilerTokenStream, input: CompilerTokenStream) -> CompilerTokenStream {
+#[proc_macro_derive(Reflexion)]
+pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStream {
     // Getting data from the AST
-    let ast: DeriveInput = syn::parse(input.clone()).unwrap();
+    let ast: DeriveInput = syn::parse(input).unwrap();
     let ty = ast.ident;
+    let ty_str = ty.to_string();
 
     // Recovers the identifiers of the struct's members
     let fields = filter_fields(
@@ -35,8 +24,10 @@ pub fn reflexion_details(_meta: CompilerTokenStream, input: CompilerTokenStream)
             syn::Data::Struct(ref s) => &s.fields,
             _ => return syn::Error::new(
                 ty.span(), 
-                "ForeignKeyable only works with Structs"
-            ).to_compile_error().into()
+                "Reflection only works with structs"
+            )
+            .to_compile_error()
+            .into()
         }
     );
 
@@ -49,7 +40,17 @@ pub fn reflexion_details(_meta: CompilerTokenStream, input: CompilerTokenStream)
                 }
             }
     );
-    input.into()
+    
+    let quote = quote! {
+        use arcane::reflexion::StructReflexion;
+        impl arcane::reflexion::StructReflexion for #ty {
+            fn get_struct_name<'a>(&'a self) -> &'a str {
+                #ty_str
+            }
+        }
+    };
+
+    quote.into()
 }
 
 
