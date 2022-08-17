@@ -6,6 +6,8 @@
 //! as the `reflexion` concept, which is the ability of the code to introspect
 //! itself to get details about itself.
 
+use std::collections::HashMap;
+
 /// Defines the base reflection actions
 pub trait Reflexion {}
 
@@ -15,4 +17,8 @@ pub trait Reflexion {}
 pub trait StructReflexion {
     /// Returns the identifier of a struct as a string slice
     fn get_struct_name<'a>(&'a self) -> &'a str;
+
+    /// Returns a collection of Key Value pairs with the identifier of the
+    /// struct's fields and the type of every field.
+    fn get_stuct_fields<'a>(&'a self) -> HashMap<String, String>;
 }
