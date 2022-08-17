@@ -1,0 +1,1 @@
+/home/alexvergara/code/zero_day_code/arcane/arcane/target/debug/libarcane.rlib: /home/alexvergara/code/zero_day_code/arcane/arcane/src/lib.rs /home/alexvergara/code/zero_day_code/arcane/arcane-macros/src/lib.rs
