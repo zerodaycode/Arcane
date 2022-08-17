@@ -16,16 +16,15 @@
 //! 
 
 
-/// Project mods
-pub extern crate arcane_macros;
+//!Project mods
+extern crate arcane_macros;
+extern crate arcane_reflexion;
 
 
 // The game of reexports
-mod types;
-// pub use arcane_macros;
 
 /// Provides access to the public API of reflexion
 pub mod reflexion {
     pub use arcane_macros::*;
-    pub use crate::types::*;
+    pub use arcane_reflexion::*;
 }
