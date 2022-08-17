@@ -36,6 +36,25 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
 
     let fields_name_type = fields_name_type(ast_data);
 
+    // let field_idents = fields.iter()
+                //     .map( |(_vis, ident)|
+                //         {
+                //             let i = ident.to_string();
+                //             quote! {
+                //                 #i => Some(self.#ident.to_string())
+                //             }
+                //         }
+                // );
+    let f = fields.iter()
+        .map( |(_vis, ident)| 
+            {
+                let i = ident.to_string();
+                quote! {
+                    hm.push(#i, #i);
+                }
+            }
+    );
+
     let field_idents = fields.iter()
         .map( |(_vis, ident)|
             {
@@ -57,7 +76,9 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
             /// Returns a collection of Key Value pairs with the identifier of the
             /// struct's fields and the type of every field.
             fn get_stuct_fields<'a>(&'a self) -> HashMap<String, String> {
-                #fields_name_type
+                let hm = HashMap::new();
+                #(#f),*;
+                hm
             }
 
             
