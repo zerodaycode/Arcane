@@ -22,6 +22,9 @@ dependencies = [
 [[package]]
 name = "arcane-reflexion"
 version = "0.1.0"
+dependencies = [
+ "syn",
+]
 
 [[package]]
 name = "proc-macro2"
