@@ -4,7 +4,6 @@
 #[cfg(test)]
 mod reflexion_tests {
     use arcane::reflexion::*;
-    use std::collections::HashMap;
     
     /// Mock type to work with the tests
     #[derive(Reflexion)]
