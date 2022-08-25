@@ -7,6 +7,7 @@ mod reflexion_tests {
     
     /// Mock type to work with the tests
     #[derive(Reflexion)]
+    #[allow(dead_code)]
     struct ReflectiveMock {
         pub id: i32,
         pub username: String
@@ -37,5 +38,18 @@ mod reflexion_tests {
         assert_eq!(hm.get("id").unwrap(), &"i32");
         assert_eq!(hm.get("username").unwrap(), &"String");
         assert_ne!(hm.get("username").unwrap(), &"i32");
+    }
+
+    #[test]
+    fn check_struct_info() {
+        let mock = ReflectiveMock { 
+            id: 1,
+            username: "Pyzyryab".to_string()
+        };
+
+        let si = mock.get_info();
+
+        println!("SI: {:?}", si.name);
+        println!("Fields: {:?}", si.fields);
     }
 }

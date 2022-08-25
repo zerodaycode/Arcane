@@ -17,7 +17,7 @@
 
 
 //!Project mods
-pub extern crate arcane_macros;
+extern crate arcane_macros;
 extern crate arcane_reflexion;
 extern crate arcane_ops;
 

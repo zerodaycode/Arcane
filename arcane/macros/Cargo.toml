@@ -13,3 +13,4 @@ quote = "1.0.9"
 proc-macro2 = "1.0.27"
 
 arcane-reflexion = { path = "../../reflexion" }
+arcane-ops = { path = "../../ops" }
