@@ -39,13 +39,13 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
     //     .into()
     // };
 
-    // Recovers the identifiers of the struct's members, and checks that the derive
-    // macro it's only applied to structs
+    // Parsing the data of the fields of the struct
     let fields = filter_fields(&_struct.fields);
 
     // Generates the tokens for create the relationship between the fields and it's
     // declared types
-    let hm_f = fields.iter()
+    let hm_f = fields
+        .iter()
         .map( |(_vis, ident, typ, _attrs)| 
             {
                 let i = ident.to_string();
@@ -54,21 +54,52 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
             }
         );
 
+    // Getting the attrs attached to the struct
+    let st_attrs = _struct
+        .clone()
+        .attributes
+        .into_iter()
+        .map( |attr|
+            {
+                let path = attr.path.to_token_stream().to_string();
+                quote! {
+                    arcane_reflexion::Attribute {
+                        path: #path
+                    }
+                }
+            }
+        );
+
+
     // Generates the [`StructInfo`] entity for model the data of an item annotated
     // with the [`Reflexion`] derive macro
-    let fields_tokens = fields.iter()
+    let struct_info_fields = fields
+        .iter()
         .map( |(_vis, _ident, _typ, _attrs)| 
             {
                 let vis = _vis.to_token_stream().to_string();
                 let name = _ident.to_string();
                 let typ = get_field_type_as_string(_typ);
-                let attrs: &[Attribute] = _attrs.as_ref();
+                let attrs = _attrs.iter()
+                    .map( |attr|
+                        {
+                            let path = attr.path.to_token_stream().to_string();
+                            quote! {
+                                arcane_reflexion::Attribute {
+                                    path: #path
+                                }
+                            }
+                        }
+                    );
+
                 quote! {
                     arcane_reflexion::Field { 
                         visibility: #vis,
                         name: #name,
                         typ: #typ,
-                        attrs: #attrs
+                        attrs: vec![
+                            #(#attrs),*
+                        ]
                     }
                 }
             }
@@ -95,7 +126,10 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
                 arcane::reflexion::StructInfo {
                     name: #ty_str,
                     fields: vec![
-                        #(#fields_tokens),*
+                        #(#struct_info_fields),*
+                    ],
+                    attrs: vec![
+                        #(#st_attrs),*
                     ]
                 }
             }
