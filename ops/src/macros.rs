@@ -66,3 +66,53 @@ impl Parse for EnumParser {
         )
     }
 }
+
+pub mod processors {
+    use proc_macro2::Ident;
+    use quote::ToTokens;
+    use syn::{Fields, Visibility, Type, Attribute};
+
+    /// TODO Code the get_enum_variants (filter_variants or whatever)
+    /// 
+    /// TODO Refactor them into a real helper struct
+    /// 
+    /// Helper for destructure de [`syn::Fields`] into a [`Vec`] of tuples
+    /// that holds the attributes of every field.
+    pub fn filter_fields(fields: &Fields) -> Vec<(Visibility, Ident, Type, Vec<Attribute>)> {
+        fields
+            .iter()
+            .map( |field| 
+                (
+                    field.vis.clone(), 
+                    field.ident.as_ref().unwrap().clone(),
+                    field.ty.clone(),
+                    field.attrs.clone()
+                ) 
+            )
+            .collect::<Vec<_>>()
+    }
+
+
+
+    /// TODO Refactor to a utilery module
+    pub fn get_field_type_as_string(typ: &Type) -> String {
+        match &*typ {
+            Type::Array(type_) => type_.to_token_stream().to_string(),
+            Type::BareFn(type_) => type_.to_token_stream().to_string(),
+            Type::Group(type_) => type_.to_token_stream().to_string(),
+            Type::ImplTrait(type_) => type_.to_token_stream().to_string(),
+            Type::Infer(type_) => type_.to_token_stream().to_string(),
+            Type::Macro(type_) => type_.to_token_stream().to_string(),
+            Type::Never(type_) => type_.to_token_stream().to_string(),
+            Type::Paren(type_) => type_.to_token_stream().to_string(),
+            Type::Path(type_) => type_.to_token_stream().to_string(),
+            Type::Ptr(type_) => type_.to_token_stream().to_string(),
+            Type::Reference(type_) => type_.to_token_stream().to_string(),
+            Type::Slice(type_) => type_.to_token_stream().to_string(),
+            Type::TraitObject(type_) => type_.to_token_stream().to_string(),
+            Type::Tuple(type_) => type_.to_token_stream().to_string(),
+            Type::Verbatim(type_) => type_.to_token_stream().to_string(),
+            _ => "".to_owned(),
+        }
+    }
+}

@@ -13,6 +13,14 @@ mod reflexion_tests {
         pub username: String
     }
 
+
+    #[derive(EnumInfo)]
+    enum EnumMock {
+        A,
+        B
+    }
+
+
     #[test]
     fn get_struct_name() {
         let mock = ReflectiveMock { 

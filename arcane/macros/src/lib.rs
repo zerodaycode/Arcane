@@ -4,16 +4,16 @@ extern crate proc_macro;
 extern crate arcane_ops;
 
 
-// use arcane_reflexion::StructInfo;
-use arcane_ops::macros::StructParser;
-
-use proc_macro::TokenStream as CompilerTokenStream;
-use proc_macro2::Ident;
-use quote::{quote, ToTokens};
-use syn::{
-    Fields, Type, Visibility, Attribute
+use arcane_ops::macros::{
+    StructParser,
+    processors::{
+        filter_fields, 
+        get_field_type_as_string
+    }
 };
 
+use proc_macro::TokenStream as CompilerTokenStream;
+use quote::{quote, ToTokens};
 
 #[proc_macro_derive(StructInfo)]
 pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStream {
@@ -91,10 +91,15 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
                 let attrs = _attrs.iter()
                     .map( |attr|
                         {
+                            let att = attr.to_token_stream().to_string();
                             let path = attr.path.to_token_stream().to_string();
+                            let tokens = attr.tokens.to_string();
+
                             quote! {
                                 arcane_reflexion::Attribute {
-                                    path: #path
+                                    attr: #att,
+                                    path: #path,
+                                    tokens: #tokens
                                 }
                             }
                         }
@@ -149,46 +154,21 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
 }
 
 
-/// TODO Code the get_enum_variants (filter_variants or whatever)
-/// 
-/// TODO Refactor them into a real helper struct
-/// 
-/// Helper for destructure de [`syn::Fields`] into a [`Vec`] of tuples
-/// that holds the attributes of every field.
-fn filter_fields(fields: &Fields) -> Vec<(Visibility, Ident, Type, Vec<Attribute>)> {
-    fields
-        .iter()
-        .map( |field| 
-            (
-                field.vis.clone(), 
-                field.ident.as_ref().unwrap().clone(),
-                field.ty.clone(),
-                field.attrs.clone()
-            ) 
+#[proc_macro_derive(EnumInfo)]
+pub fn reflexion_enum_details(input: CompilerTokenStream) -> CompilerTokenStream {
+
+    // Check that the derive macro it's properly applicated
+    let ast: syn::DeriveInput = syn::parse(input.clone()).unwrap();
+    match ast.data {
+        syn::Data::Enum(ref e) => &e.variants,
+        _ => return syn::Error::new(
+            ast.ident.span(), 
+            "EnumInfo only works with enums"
         )
-        .collect::<Vec<_>>()
-}
+        .to_compile_error()
+        .into()
+    };
 
 
-
-/// TODO Refactor to a utilery module
-fn get_field_type_as_string(typ: &Type) -> String {
-    match &*typ {
-        Type::Array(type_) => type_.to_token_stream().to_string(),
-        Type::BareFn(type_) => type_.to_token_stream().to_string(),
-        Type::Group(type_) => type_.to_token_stream().to_string(),
-        Type::ImplTrait(type_) => type_.to_token_stream().to_string(),
-        Type::Infer(type_) => type_.to_token_stream().to_string(),
-        Type::Macro(type_) => type_.to_token_stream().to_string(),
-        Type::Never(type_) => type_.to_token_stream().to_string(),
-        Type::Paren(type_) => type_.to_token_stream().to_string(),
-        Type::Path(type_) => type_.to_token_stream().to_string(),
-        Type::Ptr(type_) => type_.to_token_stream().to_string(),
-        Type::Reference(type_) => type_.to_token_stream().to_string(),
-        Type::Slice(type_) => type_.to_token_stream().to_string(),
-        Type::TraitObject(type_) => type_.to_token_stream().to_string(),
-        Type::Tuple(type_) => type_.to_token_stream().to_string(),
-        Type::Verbatim(type_) => type_.to_token_stream().to_string(),
-        _ => "".to_owned(),
-    }
+    input
 }
