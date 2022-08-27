@@ -19,12 +19,19 @@
 //!Project mods
 pub extern crate arcane_macros;
 extern crate arcane_reflexion;
+extern crate arcane_ops;
 
 
 // The game of reexports
 
-/// Provides access to the public API of reflexion
+/// Provides access to the public API of Reflexion
 pub mod reflexion {
     pub use arcane_macros::*;
     pub use arcane_reflexion::*;
+}
+
+/// Public API for handling different Rust aspects,
+/// like utils for handling and parsing macros...
+pub mod ops {
+    pub use arcane_ops::*;
 }

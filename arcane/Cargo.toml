@@ -6,5 +6,6 @@ authors = ["Alex Vergara<pyzyryab@tutanota.com>"]
 
 
 [dependencies]
-arcane-macros = { path = "../macros" }
+arcane-macros = { path = "./macros" }
 arcane-reflexion = { path = "../reflexion" }
+arcane-ops = { path = "../ops" }

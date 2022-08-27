@@ -7,11 +7,22 @@ name = "arcane"
 version = "0.1.0"
 dependencies = [
  "arcane-macros",
+ "arcane-ops",
  "arcane-reflexion",
 ]
 
 [[package]]
 name = "arcane-macros"
+version = "0.1.0"
+dependencies = [
+ "arcane-reflexion",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "arcane-ops"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",
@@ -22,6 +33,9 @@ dependencies = [
 [[package]]
 name = "arcane-reflexion"
 version = "0.1.0"
+dependencies = [
+ "syn",
+]
 
 [[package]]
 name = "proc-macro2"
