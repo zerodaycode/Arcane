@@ -22,7 +22,6 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
     let ast: syn::DeriveInput = syn::parse(input.clone()).unwrap();
     match ast.data {
         syn::Data::Struct(ref s) => &s.fields,
-        // syn::Data::Enum(ref en) => &en.variants,
         _ => return syn::Error::new(
             ast.ident.span(), 
             "StructInfo only works with structs"
@@ -102,14 +101,14 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
                     );
 
                 quote! {
-                    arcane_reflexion::Field { 
-                        visibility: #vis,
-                        name: #name,
-                        typ: #typ,
-                        attrs: vec![
+                    arcane_reflexion::Field::new( 
+                        #vis,
+                        #name,
+                        #typ,
+                        vec![
                             #(#attrs),*
                         ]
-                    }
+                    )
                 }
             }
         );
