@@ -8,10 +8,6 @@
 
 use std::collections::HashMap;
 
-// extern crate arcane_ops;
-use arcane_ops::macros::StructParser;
-use syn::{AttrStyle, Token, Meta, punctuated::Punctuated, MetaNameValue};
-
 
 /// Defines the base reflection actions
 pub trait Reflexion {}

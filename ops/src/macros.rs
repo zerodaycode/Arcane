@@ -6,7 +6,7 @@ use syn::{
     parse::{
         Parse, ParseBuffer
     }, 
-    ItemStruct, Attribute, token::{Enum, Comma}, punctuated::Punctuated, Variant, ItemEnum, DeriveInput
+    ItemStruct, Attribute, token::{Enum, Comma}, punctuated::Punctuated, Variant, ItemEnum
 };
 
 /// Parses the tokens of a Rust structure
