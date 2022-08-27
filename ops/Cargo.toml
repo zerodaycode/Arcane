@@ -1,5 +1,5 @@
 [package]
-name = "arcane-reflexion"
+name = "arcane-ops"
 version = "0.1.0"
 edition = "2021"
 authors = ["Alex Vergara<pyzyryab@tutanota.com>"]
@@ -7,5 +7,5 @@ authors = ["Alex Vergara<pyzyryab@tutanota.com>"]
 
 [dependencies]
 syn = { version = "1.0.86", features = ["full"] }
-
-arcane-ops = { path = "../ops" }
+quote = "1.0.9"
+proc-macro2 = "1.0.27"
