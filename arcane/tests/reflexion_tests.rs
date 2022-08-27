@@ -56,6 +56,7 @@ mod reflexion_tests {
         assert_eq!(ff.name, "id");
         assert_eq!(ff.typ, "i32");
         assert_eq!(ff.visibility, ItemVisibility::Private);
+        assert_eq!(ff.visibility.to_string(), "Private");
         assert!(ff.attrs.is_empty());
 
         let second_field = &si.fields;
@@ -63,6 +64,7 @@ mod reflexion_tests {
         assert_eq!(sf.name, "username");
         assert_eq!(sf.typ, "String");
         assert_eq!(sf.visibility, ItemVisibility::Public);
+        assert_eq!(sf.visibility.to_string(), "Public");
         assert!(sf.attrs.is_empty());
 
         let doc_attr = &si.attrs;
