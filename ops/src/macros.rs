@@ -3,10 +3,10 @@
 use proc_macro2::Ident;
 use syn::{
     Visibility, Generics, Fields, 
+    ItemStruct, Attribute, token::{Enum, Comma}, punctuated::Punctuated, Variant, ItemEnum,
     parse::{
         Parse, ParseBuffer
-    }, 
-    ItemStruct, Attribute, token::{Enum, Comma}, punctuated::Punctuated, Variant, ItemEnum
+    }
 };
 
 /// Parses the tokens of a Rust structure
@@ -50,8 +50,11 @@ impl Parse for StructParser {
 
 /// Parses the tokens of a Rust enum variant
 pub struct EnumParser {
-    pub r#enum: Enum,
-    pub variants: Punctuated<Variant, Comma>
+    pub r#enum_token: Enum,
+    pub ident: Ident,
+    pub variants: Punctuated<Variant, Comma>,
+    pub generics: Generics,
+    pub attrs: Vec<Attribute>
 }
 
 impl Parse for EnumParser {
@@ -60,8 +63,11 @@ impl Parse for EnumParser {
 
         Ok(
             Self {
-                r#enum: _enum.enum_token,
-                variants: _enum.variants
+                ident: _enum.ident,
+                enum_token: _enum.enum_token,
+                variants: _enum.variants,
+                generics: _enum.generics,
+                attrs: _enum.attrs
             }
         )
     }
@@ -72,10 +78,6 @@ pub mod processors {
     use quote::ToTokens;
     use syn::{Fields, Visibility, Type, Attribute};
 
-    /// TODO Code the get_enum_variants (filter_variants or whatever)
-    /// 
-    /// TODO Refactor them into a real helper struct
-    /// 
     /// Helper for destructure de [`syn::Fields`] into a [`Vec`] of tuples
     /// that holds the attributes of every field.
     pub fn filter_fields(fields: &Fields) -> Vec<(Visibility, Ident, Type, Vec<Attribute>)> {
@@ -94,7 +96,7 @@ pub mod processors {
 
 
 
-    /// TODO Refactor to a utilery module
+    /// Given a [`syn::Type`] returns it's representation as [`String`]
     pub fn get_field_type_as_string(typ: &Type) -> String {
         match &*typ {
             Type::Array(type_) => type_.to_token_stream().to_string(),

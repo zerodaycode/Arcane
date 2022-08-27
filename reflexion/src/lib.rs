@@ -29,6 +29,14 @@ pub trait StructReflexion {
 }
 
 
+/// Gives a user defined enum type the ability of introspect itself
+/// and provide the caller info about the type at runtime.
+pub trait EnumReflexion {
+    /// Returns the identifier of the enum type as an &str
+    fn get_name<'a>(&'a self) -> &'a str;
+}
+
+
 /// Type for wrapping all the info available about an implementor
 /// of [`StructReflexion`], offering it as 
 pub struct StructInfo<'a> {
@@ -89,6 +97,19 @@ pub struct Attribute<'a> {
     pub path: &'a str,
     pub tokens: &'a str
 
+}
+
+#[derive(Debug, Clone)]
+pub struct EnumInfo<'a> {
+    pub name: &'a str,
+    pub variants: Vec<VariantInfo<'a>>
+}
+
+/// Reflective data of a variant of some enum type
+#[derive(Debug, Clone)]
+pub struct VariantInfo<'a> {
+    pub name: &'a str,
+    pub attrs: Vec<Attribute<'a>>
 }
 
 /// Variants represents the visibility of a Rust source code item.

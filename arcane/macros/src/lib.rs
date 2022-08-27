@@ -6,6 +6,7 @@ extern crate arcane_ops;
 
 use arcane_ops::macros::{
     StructParser,
+    EnumParser,
     processors::{
         filter_fields, 
         get_field_type_as_string
@@ -159,6 +160,7 @@ pub fn reflexion_enum_details(input: CompilerTokenStream) -> CompilerTokenStream
 
     // Check that the derive macro it's properly applicated
     let ast: syn::DeriveInput = syn::parse(input.clone()).unwrap();
+    
     match ast.data {
         syn::Data::Enum(ref e) => &e.variants,
         _ => return syn::Error::new(
@@ -169,6 +171,45 @@ pub fn reflexion_enum_details(input: CompilerTokenStream) -> CompilerTokenStream
         .into()
     };
 
+    let e_num = syn::parse::<EnumParser>(input)
+        .expect("Failed to parse the enum attached to this derive macro");
+    let ty = &e_num.ident;
+    let ty_str = &e_num.ident.to_string();
 
-    input
+    let enum_info = quote! {
+        arcane_reflexion::EnumInfo {
+            name: #ty_str
+        };
+    };
+
+    let variants = &e_num.variants
+        .iter()
+        .map( |variant| 
+            {
+                let variant_name = &variant.ident.to_string();
+                let variant_ = &variant.fields;  /// TODO Parse fields
+                let variant_attrs = &variant.attrs;
+
+                quote! {
+                    arcane::reflexion::EnumInfo {
+                        name: #variant_name,
+                        attrs: vec![
+                            #(#variant_attrs),*  // Attributes must be Arcane Attrs
+                        ]
+                    }
+                }
+            }
+        );
+
+
+    let quote = quote! {
+        impl arcane::reflexion::EnumReflexion for #ty {
+            /// Returns the identifier of the enum type as an &str
+            fn get_name<'a>(&'a self) -> &'a str {
+                #ty_str
+            }
+        }
+    };
+
+    quote.into()
 }

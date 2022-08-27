@@ -89,4 +89,13 @@ mod reflexion_tests {
 
         print!("Fields: {:?}", &si.fields);
     }
+
+    #[test]
+    fn get_enum_name() {
+        let variant = EnumMock::A;
+        assert_eq!("EnumMock", variant.get_name());
+        println!("E: {:?}", variant.get_name());
+        // println!("Enum info: {:?}", variant.);
+    }
+
 }
