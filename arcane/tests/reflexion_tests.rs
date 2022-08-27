@@ -9,7 +9,7 @@ mod reflexion_tests {
     #[derive(StructInfo)]
     #[allow(dead_code)]
     struct ReflectiveMock {
-        pub id: i32,
+        id: i32,
         pub username: String
     }
 
@@ -55,12 +55,16 @@ mod reflexion_tests {
         let ff = first_field.get(0).unwrap();
         assert_eq!(ff.name, "id");
         assert_eq!(ff.typ, "i32");
+        assert_eq!(ff.visibility, ItemVisibility::Private);
+        assert_eq!(ff.visibility.to_string(), "Private");
         assert!(ff.attrs.is_empty());
 
         let second_field = &si.fields;
         let sf = second_field.get(1).unwrap();
         assert_eq!(sf.name, "username");
         assert_eq!(sf.typ, "String");
+        assert_eq!(sf.visibility, ItemVisibility::Public);
+        assert_eq!(sf.visibility.to_string(), "Public");
         assert!(sf.attrs.is_empty());
 
         let doc_attr = &si.attrs;
@@ -74,5 +78,7 @@ mod reflexion_tests {
         assert_eq!("#[allow(dead_code)]", aua.attr);
         assert_eq!("allow", aua.path);
         assert_eq!("(dead_code)", aua.tokens);
+
+        print!("Fields: {:?}", &si.fields);
     }
 }

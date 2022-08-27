@@ -56,12 +56,30 @@ impl<'a> StructInfo<'a> {
 /// info about a field of a struct, mostly as is string repr.
 #[derive(Debug, Clone)]
 pub struct Field<'a> {
-    pub visibility: &'a str,
+    pub visibility: ItemVisibility,
     pub name: &'a str,
     pub typ: &'a str,
     pub attrs: Vec<Attribute<'a>>
 }
 
+impl<'a> Field<'a> {
+    pub fn new(
+        vis: &'a str, 
+        name: &'a str, 
+        typ: &'a str, 
+        attrs: Vec<Attribute<'a>>
+    ) -> Self {
+        Self { 
+            visibility: match vis {
+                "pub" => ItemVisibility::Public,
+                &_ => ItemVisibility::Private
+            },
+            name: name, 
+            typ: typ, 
+            attrs: attrs 
+        }
+    }
+}
 
 /// The runtime reflexive info of attribute attached to a element of code
 /// 
@@ -74,7 +92,17 @@ pub struct Attribute<'a> {
 }
 
 /// Variants represents the visibility of a Rust source code item.
+#[derive(Debug, Clone, PartialEq)]
 pub enum ItemVisibility {
     Public,
     Private
+}
+
+impl std::fmt::Display for ItemVisibility {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match *self {
+            ItemVisibility::Public => write!(f, "Public"),
+            ItemVisibility::Private => write!(f, "Private")
+        }
+    }
 }
