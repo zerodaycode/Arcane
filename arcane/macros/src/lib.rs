@@ -11,7 +11,7 @@ use proc_macro::TokenStream as CompilerTokenStream;
 use proc_macro2::Ident;
 use quote::{quote, ToTokens};
 use syn::{
-    Fields, Type, Visibility, Attribute, punctuated::Punctuated, MetaNameValue, Token
+    Fields, Type, Visibility, Attribute
 };
 
 
