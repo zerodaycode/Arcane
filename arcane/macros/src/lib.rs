@@ -11,7 +11,7 @@ use proc_macro::TokenStream as CompilerTokenStream;
 use proc_macro2::Ident;
 use quote::{quote, ToTokens};
 use syn::{
-    Fields, Type, Visibility, Attribute
+    Fields, Type, Visibility, Attribute, punctuated::Punctuated, MetaNameValue, Token
 };
 
 
@@ -25,7 +25,7 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
         // syn::Data::Enum(ref en) => &en.variants,
         _ => return syn::Error::new(
             ast.ident.span(), 
-            "Reflexion only works with structs or enums"
+            "StructInfo only works with structs"
         )
         .to_compile_error()
         .into()
@@ -65,10 +65,15 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
         .into_iter()
         .map( |attr|
             {
+                let att = attr.to_token_stream().to_string();
                 let path = attr.path.to_token_stream().to_string();
+                let tokens = attr.tokens.to_string();
+                
                 quote! {
                     arcane_reflexion::Attribute {
-                        path: #path
+                        attr: #att,
+                        path: #path,
+                        tokens: #tokens
                     }
                 }
             }
