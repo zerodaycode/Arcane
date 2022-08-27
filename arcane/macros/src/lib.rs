@@ -1,71 +1,118 @@
 //! Library for the implementation of the macro-driven `Arcane` reflective features
 
 extern crate proc_macro;
+extern crate arcane_ops;
 
-use arcane_reflexion::ItemVisibility;
+
+// use arcane_reflexion::StructInfo;
+use arcane_ops::macros::StructParser;
+
 use proc_macro::TokenStream as CompilerTokenStream;
 use proc_macro2::Ident;
 use quote::{quote, ToTokens};
 use syn::{
-    DeriveInput, Fields, Type, Visibility, Attribute, Generics
+    Fields, Type, Visibility, Attribute, punctuated::Punctuated, MetaNameValue, Token
 };
 
 
-
-/// Convenient structure to parse the tokens of a Rust structure
-struct StructParser<'a> {
-    pub struct_name: &'a str,
-    pub vis: ItemVisibility,
-    pub generics: Generics,
-    pub fields: &'a [Fields],
-    pub attributes: &'a [Attribute]
-}  /// TODO Como parser, as processor, pero en el módulo de
-    // reflexion, como sun helper
-
-
-
-#[proc_macro_derive(Reflexion)]
+#[proc_macro_derive(StructInfo)]
 pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStream {
-    // Getting data from the AST
-    let ast: DeriveInput = syn::parse(input).unwrap();
-    let ty = ast.ident;
-    let ty_str = ty.to_string();
 
-    let ast_data = match ast.data {
+    // Check that the derive macro it's properly applicated
+    let ast: syn::DeriveInput = syn::parse(input.clone()).unwrap();
+    match ast.data {
         syn::Data::Struct(ref s) => &s.fields,
+        // syn::Data::Enum(ref en) => &en.variants,
         _ => return syn::Error::new(
-            ty.span(), 
-            "Reflection only works with structs"
+            ast.ident.span(), 
+            "StructInfo only works with structs"
         )
         .to_compile_error()
         .into()
     };
 
-    // Recovers the identifiers of the struct's members, and checks that the derive
-    // macro it's only applied to structs
-    let fields = filter_fields(ast_data);
+    let truct = syn::parse::<StructParser>(input);
+
+    if truct.is_err() {
+        return truct.err().unwrap().into_compile_error().into()
+    }
+
+    // No errors detected on the parsing, so we can safely unwrap the parsed result
+    let _struct = truct.unwrap();
+    let ty = &_struct.ident;
+
+    let ty_str = &ty.to_string();
+
+    // Parsing the data of the fields of the struct
+    let fields = filter_fields(&_struct.fields);
 
     // Generates the tokens for create the relationship between the fields and it's
     // declared types
-    let hm_f = fields.iter()
+    let hm_f = fields
+        .iter()
         .map( |(_vis, ident, typ, _attrs)| 
             {
                 let i = ident.to_string();
                 let t = get_field_type_as_string(typ);
                 quote! { hm.insert(#i, #t); }
             }
-    );
+        );
+
+    // Getting the attrs attached to the struct
+    let st_attrs = _struct
+        .clone()
+        .attributes
+        .into_iter()
+        .map( |attr|
+            {
+                let att = attr.to_token_stream().to_string();
+                let path = attr.path.to_token_stream().to_string();
+                let tokens = attr.tokens.to_string();
+                
+                quote! {
+                    arcane_reflexion::Attribute {
+                        attr: #att,
+                        path: #path,
+                        tokens: #tokens
+                    }
+                }
+            }
+        );
+
 
     // Generates the [`StructInfo`] entity for model the data of an item annotated
     // with the [`Reflexion`] derive macro
-    let fields_struct = fields.iter()
-        .map( |(_vis, ident, typ, _attrs)| 
+    let struct_info_fields = fields
+        .iter()
+        .map( |(_vis, _ident, _typ, _attrs)| 
             {
-                let i = ident.to_string();
-                let t = get_field_type_as_string(typ);
-                quote! { hm.insert(#i, #t); }
+                let vis = _vis.to_token_stream().to_string();
+                let name = _ident.to_string();
+                let typ = get_field_type_as_string(_typ);
+                let attrs = _attrs.iter()
+                    .map( |attr|
+                        {
+                            let path = attr.path.to_token_stream().to_string();
+                            quote! {
+                                arcane_reflexion::Attribute {
+                                    path: #path
+                                }
+                            }
+                        }
+                    );
+
+                quote! {
+                    arcane_reflexion::Field { 
+                        visibility: #vis,
+                        name: #name,
+                        typ: #typ,
+                        attrs: vec![
+                            #(#attrs),*
+                        ]
+                    }
+                }
             }
-    );
+        );
     
     let quote = quote! {
         impl arcane::reflexion::StructReflexion for #ty {
@@ -83,18 +130,16 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
                 hm
             }
 
-            ///
-            fn get_info<'a>(&'a self) -> StructInfo<'a> {
-                // for field in 
+            /// Returns an [`arcane::reflexion::StructInfo`] entity that contains
+            /// runtime reflexive info about `Self`.
+            fn get_info<'a>(&'a self) -> arcane::reflexion::StructInfo {
                 arcane::reflexion::StructInfo {
                     name: #ty_str,
                     fields: vec![
-                        arcane::reflexion::Field {
-                            visibility: "", 
-                            name: "", 
-                            typ: "", 
-                            attrs: &[arcane::reflexion::Attr]
-                        }
+                        #(#struct_info_fields),*
+                    ],
+                    attrs: vec![
+                        #(#st_attrs),*
                     ]
                 }
             }
@@ -109,7 +154,8 @@ pub fn reflexion_struct_details(input: CompilerTokenStream) -> CompilerTokenStre
 /// 
 /// TODO Refactor them into a real helper struct
 /// 
-/// Helper for generate the fields data for the Custom Derives Macros
+/// Helper for destructure de [`syn::Fields`] into a [`Vec`] of tuples
+/// that holds the attributes of every field.
 fn filter_fields(fields: &Fields) -> Vec<(Visibility, Ident, Type, Vec<Attribute>)> {
     fields
         .iter()
@@ -123,6 +169,7 @@ fn filter_fields(fields: &Fields) -> Vec<(Visibility, Ident, Type, Vec<Attribute
         )
         .collect::<Vec<_>>()
 }
+
 
 
 /// TODO Refactor to a utilery module

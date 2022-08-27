@@ -6,3 +6,6 @@ authors = ["Alex Vergara<pyzyryab@tutanota.com>"]
 
 
 [dependencies]
+syn = { version = "1.0.86", features = ["full"] }
+
+arcane-ops = { path = "../ops" }
