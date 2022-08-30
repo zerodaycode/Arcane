@@ -89,15 +89,6 @@ impl<'a> Field<'a> {
     }
 }
 
-/// The runtime reflexive info of attribute attached to a element of code
-/// 
-#[derive(Debug, Clone)]
-pub struct Attribute<'a> {
-    pub attr: &'a str,
-    pub path: &'a str,
-    pub tokens: &'a str
-
-}
 
 #[derive(Debug, Clone)]
 pub struct EnumInfo<'a> {
@@ -109,7 +100,18 @@ pub struct EnumInfo<'a> {
 #[derive(Debug, Clone)]
 pub struct VariantInfo<'a> {
     pub name: &'a str,
+    pub fields: Vec<Field<'a>>,
     pub attrs: Vec<Attribute<'a>>
+}
+
+
+/// The runtime reflexive info of attribute attached to a element of code
+/// 
+#[derive(Debug, Clone)]
+pub struct Attribute<'a> {
+    pub attr: &'a str,
+    pub path: &'a str,
+    pub tokens: &'a str
 }
 
 /// Variants represents the visibility of a Rust source code item.

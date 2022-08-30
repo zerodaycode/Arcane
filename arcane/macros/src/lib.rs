@@ -182,19 +182,80 @@ pub fn reflexion_enum_details(input: CompilerTokenStream) -> CompilerTokenStream
         };
     };
 
+    // TODO MEGA TODO
+    // Pass data to the macros crate structs, and return instance of ArcaneReflexion
+    // and the copy the data?
+
     let variants = &e_num.variants
         .iter()
         .map( |variant| 
             {
                 let variant_name = &variant.ident.to_string();
-                let variant_ = &variant.fields;  /// TODO Parse fields
-                let variant_attrs = &variant.attrs;
+                let variant_fields = filter_fields(&variant.fields);  /// TODO Parse fields
+
+                let variant_info_fields = variant_fields
+                    .iter()
+                    .map( |(_vis, _ident, _typ, _attrs)| 
+                        {
+                            let vis = _vis.to_token_stream().to_string();
+                            let name = _ident.to_string();
+                            let typ = get_field_type_as_string(_typ);
+                            let attrs = _attrs.iter()
+                                .map( |attr|
+                                    {
+                                        let att = attr.to_token_stream().to_string();
+                                        let path = attr.path.to_token_stream().to_string();
+                                        let tokens = attr.tokens.to_string();
+
+                                        quote! {
+                                            arcane_reflexion::Attribute {
+                                                attr: #att,
+                                                path: #path,
+                                                tokens: #tokens
+                                            }
+                                        }
+                                    }
+                                );
+
+                            quote! {
+                                arcane_reflexion::Field::new( 
+                                    #vis,
+                                    #name,
+                                    #typ,
+                                    vec![
+                                        #(#attrs),*
+                                    ]
+                                )
+                            }
+                        }
+                    );
+
+                let variant_attrs = variant.attrs
+                    .iter()
+                    .map( |attr|
+                            {
+                                let att = attr.to_token_stream().to_string();
+                                let path = attr.path.to_token_stream().to_string();
+                                let tokens = attr.tokens.to_string();
+
+                                quote! {
+                                    arcane_reflexion::Attribute {
+                                        attr: #att,
+                                        path: #path,
+                                        tokens: #tokens
+                                    }
+                                }
+                            }
+                        );
 
                 quote! {
                     arcane::reflexion::EnumInfo {
                         name: #variant_name,
+                        fields: vec![
+                            #(#variant_info_fields),*
+                        ],
                         attrs: vec![
-                            #(#variant_attrs),*  // Attributes must be Arcane Attrs
+                            #(#variant_attrs),*
                         ]
                     }
                 }
@@ -208,6 +269,8 @@ pub fn reflexion_enum_details(input: CompilerTokenStream) -> CompilerTokenStream
             fn get_name<'a>(&'a self) -> &'a str {
                 #ty_str
             }
+
+            // TODO The variants goes here
         }
     };
 
