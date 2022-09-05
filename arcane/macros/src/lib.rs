@@ -176,22 +176,12 @@ pub fn reflexion_enum_details(input: CompilerTokenStream) -> CompilerTokenStream
     let ty = &e_num.ident;
     let ty_str = &e_num.ident.to_string();
 
-    let enum_info = quote! {
-        arcane_reflexion::EnumInfo {
-            name: #ty_str
-        };
-    };
-
-    // TODO MEGA TODO
-    // Pass data to the macros crate structs, and return instance of ArcaneReflexion
-    // and the copy the data?
-
-    let variants = &e_num.variants
+    let variants = (&e_num.variants)
         .iter()
         .map( |variant| 
             {
                 let variant_name = &variant.ident.to_string();
-                let variant_fields = filter_fields(&variant.fields);  /// TODO Parse fields
+                let variant_fields = filter_fields(&variant.fields);
 
                 let variant_info_fields = variant_fields
                     .iter()
@@ -249,7 +239,7 @@ pub fn reflexion_enum_details(input: CompilerTokenStream) -> CompilerTokenStream
                         );
 
                 quote! {
-                    arcane::reflexion::EnumInfo {
+                    arcane::reflexion::VariantInfo {
                         name: #variant_name,
                         fields: vec![
                             #(#variant_info_fields),*
@@ -262,6 +252,19 @@ pub fn reflexion_enum_details(input: CompilerTokenStream) -> CompilerTokenStream
             }
         );
 
+    let enum_info = quote! {
+        arcane_reflexion::EnumInfo {
+            name: #ty_str,
+            variants: vec![
+                #(#variants),*
+            ]
+        }
+    };
+
+    // TODO MEGA TODO
+    // Pass data to the macros crate structs, and return instance of ArcaneReflexion
+    // and the copy the data?
+
 
     let quote = quote! {
         impl arcane::reflexion::EnumReflexion for #ty {
@@ -270,7 +273,9 @@ pub fn reflexion_enum_details(input: CompilerTokenStream) -> CompilerTokenStream
                 #ty_str
             }
 
-            // TODO The variants goes here
+            fn get_info<'a>(&'a self) -> EnumInfo {
+                #enum_info
+            }
         }
     };
 

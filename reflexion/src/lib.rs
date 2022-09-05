@@ -34,6 +34,9 @@ pub trait StructReflexion {
 pub trait EnumReflexion {
     /// Returns the identifier of the enum type as an &str
     fn get_name<'a>(&'a self) -> &'a str;
+    /// Returns an [`arcane::reflexion::EnumInfo`] entity that contains
+    /// runtime reflexive info about `Self`.
+    fn get_info<'a>(&'a self) -> EnumInfo;
 }
 
 
